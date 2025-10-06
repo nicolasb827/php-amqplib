@@ -8,16 +8,16 @@ use PhpAmqpLib\Exception\AMQPRuntimeException;
 
 class SwooleIO extends AbstractIO
 {
-    /** @var null|resource */
-    protected $context;
+    /** @var null|int */
+    protected $crypto_method;
 
     /** @var \OpenSwoole\Coroutine\Client */
     private $sock;
 
+    private $buffer;
     /**
      * @param string $host
      * @param int $port
-     * @param float $connection_timeout
      * @param float $read_write_timeout
      * @param resource|null $context
      * @param bool $keepalive
@@ -27,10 +27,9 @@ class SwooleIO extends AbstractIO
     public function __construct(
         $host,
         $port,
-        $connection_timeout,
-        $read_write_timeout,
-        $context = null,
+        $read_timeout,
         $keepalive = false,
+        $write_timeout,
         $heartbeat = 0,
         $ssl_protocol = null
     )
@@ -52,14 +51,15 @@ class SwooleIO extends AbstractIO
 
         $this->host = $host;
         $this->port = $port;
-        $this->connection_timeout = $connection_timeout;
-        $this->read_timeout = (float)$read_write_timeout;
-        $this->write_timeout = (float)$read_write_timeout;
-        $this->context = $context;
+        $this->read_timeout = (float)$read_timeout;
+        $this->write_timeout = (float)$write_timeout;
         $this->keepalive = $keepalive;
         $this->heartbeat = $heartbeat;
         $this->initial_heartbeat = $heartbeat;
         $this->canDispatchPcntlSignal = $this->isPcntlSignalEnabled();
+        if (!is_null($ssl_protocol)) {
+            $this->crypto_method = $ssl_protocol;
+        }
     }
 
     /**
@@ -67,8 +67,8 @@ class SwooleIO extends AbstractIO
      */
     public function connect()
     {
-        $sock = new \OpenSwoole\Coroutine\Client(\Openswoole\Runtime::SWOOLE_SOCK_TCP);
-        if (!$sock->connect($this->host, $this->port, $this->connection_timeout)) {
+        $sock = new \OpenSwoole\Coroutine\Client(\Openswoole\Constant::SOCK_TCP);
+        if (!$sock->connect($this->host, $this->port, max($this->read_timeout, $this->write_timeout))) {
             throw new AMQPRuntimeException(
                 sprintf(
                     'Error Connecting to server(%s): %s ',
@@ -79,7 +79,7 @@ class SwooleIO extends AbstractIO
             );
         }
         $this->sock = $sock;
-        if (isset($options['ssl']['crypto_method'])) {
+        if (isset($this->crypto_method)) {
             $this->sock->enableSSL();
         }
     }
@@ -113,7 +113,7 @@ class SwooleIO extends AbstractIO
                 throw new AMQPRuntimeException('Broken pipe or closed connection');
             }
 
-            $read_buffer = $this->sock->recv($this->read_write_timeout ? $this->read_write_timeout : -1);
+            $read_buffer = $this->sock->recv($this->read_timeout ? $this->read_timeout : -1);
             if ($read_buffer === false) {
                 throw new AMQPRuntimeException('Error receiving data, errno=' . $this->sock->errCode);
             }
@@ -135,10 +135,10 @@ class SwooleIO extends AbstractIO
      */
     public function write($data)
     {
-        $buffer = $this->sock->send($data);
+        $buffer = $this->sock->send($data, $this->write_timeout ? $this->write_timeout : -1);
 
         if ($buffer === false) {
-            throw new AMQPRuntimeException('Error sending data');
+            throw new AMQPRuntimeException('Error sending data: ' . $this->sock->errMsg);
         }
 
         if ($buffer === 0 && !$this->sock->connected) {
@@ -207,7 +207,7 @@ class SwooleIO extends AbstractIO
      */
     public function do_select(?int $sec, int $usec)
     {
-        var_dump($sec, $usec);
+        //var_dump($sec, $usec);
         $this->check_heartbeat();
 
         return 1;

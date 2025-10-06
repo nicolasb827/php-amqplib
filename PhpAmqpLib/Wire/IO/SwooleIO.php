@@ -3,7 +3,6 @@
 namespace PhpAmqpLib\Wire\IO;
 
 use PhpAmqpLib\Exception\AMQPRuntimeException;
-use Swoole;
 
 // use PhpAmqpLib\Wire\AMQPWriter;
 
@@ -12,7 +11,7 @@ class SwooleIO extends AbstractIO
     /** @var null|resource */
     protected $context;
 
-    /** @var Swoole\Coroutine\Client */
+    /** @var \OpenSwoole\Coroutine\Client */
     private $sock;
 
     /**
@@ -196,7 +195,7 @@ class SwooleIO extends AbstractIO
 
     /**
      * @deprecated
-     * @return null|resource|\Socket
+     * @return null|resource|\OpenSwoole\Coroutine\Client
      */
     public function getSocket()
     {

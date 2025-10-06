@@ -15,6 +15,7 @@ final class AMQPConnectionConfig
     public const AUTH_EXTERNAL = 'EXTERNAL';
     public const IO_TYPE_STREAM = 'stream';
     public const IO_TYPE_SOCKET = 'socket';
+    public const IO_TYPE_SWOOLE = 'swoole';
 
     /** @var string */
     private $ioType = self::IO_TYPE_STREAM;
@@ -149,8 +150,8 @@ final class AMQPConnectionConfig
      */
     public function setIoType(string $ioType): void
     {
-        if ($ioType !== self::IO_TYPE_STREAM && $ioType !== self::IO_TYPE_SOCKET) {
-            throw new InvalidArgumentException('IO type can be either "stream" or "socket"');
+        if ($ioType !== self::IO_TYPE_STREAM && $ioType !== self::IO_TYPE_SOCKET && $ioType !== self::IO_TYPE_SWOOLE) {
+            throw new InvalidArgumentException('IO type can be either "stream" or "socket" or "swoole"');
         }
         $this->ioType = $ioType;
     }

@@ -73,7 +73,7 @@ class SwooleIO extends AbstractIO
                 sprintf(
                     'Error Connecting to server(%s): %s ',
                     $sock->errCode,
-                    swoole_strerror($sock->errCode)
+                    $sock->errMsg
                 ),
                 $sock->errCode
             );

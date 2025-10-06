@@ -187,7 +187,7 @@ class SwooleIO extends AbstractIO
     public function close()
     {
         $this->disableHeartbeat();
-        $this->sock->close();
+        if (!is_null($this->sock)) $this->sock->close();
         $this->sock = null;
         $this->last_read = 0;
         $this->last_write = 0;

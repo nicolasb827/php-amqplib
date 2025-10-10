@@ -29,7 +29,8 @@ class SwooleIO extends AbstractIO
         $port,
         $read_timeout,
         $keepalive = false,
-        $write_timeout,
+        $write_timeout = -1,
+        $connection_timeout = 10,
         $heartbeat = 0,
         $ssl_protocol = null
     )
@@ -53,6 +54,7 @@ class SwooleIO extends AbstractIO
         $this->port = $port;
         $this->read_timeout = (float)$read_timeout;
         $this->write_timeout = (float)$write_timeout;
+        $this->connection_timeout = (float)$connection_timeout;
         $this->keepalive = $keepalive;
         $this->heartbeat = $heartbeat;
         $this->initial_heartbeat = $heartbeat;
@@ -68,7 +70,7 @@ class SwooleIO extends AbstractIO
     public function connect()
     {
         $sock = new \OpenSwoole\Coroutine\Client(\Openswoole\Constant::SOCK_TCP);
-        if (!$sock->connect($this->host, $this->port, max($this->read_timeout, $this->write_timeout))) {
+        if (!$sock->connect($this->host, $this->port, $this->connection_timeout)) {
             throw new AMQPRuntimeException(
                 sprintf(
                     'Error Connecting to server(%s): %s ',

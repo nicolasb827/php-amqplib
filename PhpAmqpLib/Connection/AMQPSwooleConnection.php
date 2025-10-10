@@ -33,9 +33,10 @@ class AMQPSwooleConnection extends AbstractConnection
         $login_method = 'AMQPLAIN',
         $login_response = null,
         $locale = 'en_US',
-        $read_timeout = 3,
+        $read_timeout = -1,
+        $connection_timeout = -1,
         $keepalive = false,
-        $write_timeout = 3,
+        $write_timeout = -1,
         $heartbeat = 0,
         $channel_rpc_timeout = 0.0,
         ?AMQPConnectionConfig $config = null
@@ -43,7 +44,7 @@ class AMQPSwooleConnection extends AbstractConnection
         if ($channel_rpc_timeout > $read_timeout) {
             throw new \InvalidArgumentException('channel RPC timeout must not be greater than I/O read timeout');
         }
-        $io = new SwooleIO($host, $port, $read_timeout, $keepalive, $write_timeout, $heartbeat, $config?->isSecure() ? $config?->getSslCryptoMethod() : null);
+        $io = new SwooleIO($host, $port, $read_timeout, $keepalive, $write_timeout, $connection_timeout, $heartbeat, $config?->isSecure() ? $config?->getSslCryptoMethod() : null);
 
         parent::__construct(
             $user,

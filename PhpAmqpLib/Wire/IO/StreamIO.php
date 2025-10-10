@@ -10,7 +10,7 @@ use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Helper\MiscHelper;
 use PhpAmqpLib\Helper\SocketConstants;
 
-class SwooleIO extends AbstractIO
+class StreamIO extends AbstractIO
 {
     /** @var null|resource */
     protected $context;

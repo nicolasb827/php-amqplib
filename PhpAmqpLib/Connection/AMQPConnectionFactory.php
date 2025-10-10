@@ -44,6 +44,7 @@ class AMQPConnectionFactory
                     $config->getLoginResponse(),
                     $config->getLocale(),
                     $config->getReadTimeout(),
+                    $config->getConnectionTimeout(),
                     $config->isKeepalive(),
                     $config->getWriteTimeout(),
                     $config->getHeartbeat(),
